@@ -129,11 +129,32 @@ func _physics_process(delta: float) -> void:
 
 	if Input.is_action_just_pressed("swap_weapon"):
 		_swap_secondary()
+	if Input.is_action_just_pressed("swap_primary"):
+		_swap_primary()
 
 	move_and_slide()
 	_animate()
 	shield_visual.visible = parry_timer > 0.0
 	scale.x = facing
+
+func _swap_primary() -> void:
+	var options: Array[String] = ["rusty_sword"]
+	if GameState.unlocked_blueprints.get("double_dagger", false):
+		options.append("double_dagger")
+	if GameState.unlocked_blueprints.get("assassin_dagger", false):
+		options.append("assassin_dagger")
+	if options.size() < 2:
+		EventBus.toast.emit("没有可切换的主武器")
+		return
+	var cur: String = GameState.weapons[0]
+	var idx := options.find(cur)
+	if idx < 0:
+		idx = 0
+	var nxt: String = options[(idx + 1) % options.size()]
+	GameState.weapons[0] = nxt
+	combo_index = 0
+	EventBus.weapon_changed.emit(0, nxt)
+	EventBus.toast.emit("主武器：%s" % WeaponDB.weapon(nxt).get("name", nxt))
 
 func _swap_secondary() -> void:
 	var options: Array[String] = ["wooden_shield"]
@@ -141,8 +162,6 @@ func _swap_secondary() -> void:
 		options.append("beginner_bow")
 	if GameState.unlocked_blueprints.get("ice_bow", false):
 		options.append("ice_bow")
-	if GameState.unlocked_blueprints.get("double_dagger", false):
-		options.append("double_dagger")
 	if options.size() < 2:
 		EventBus.toast.emit("没有可切换的副武器")
 		return
@@ -217,9 +236,6 @@ func _do_melee(wid: String, data: Dictionary) -> void:
 	combo_index += 1
 	combo_window = 0.55
 	attack_timer = float(data.get("cooldown", 0.3))
-	# crit from behind for assassin dagger
-	if data.get("crit_from_behind", false):
-		dmg = int(dmg * 1.5)
 	var info := {
 		"damage": dmg,
 		"position": attack_origin.global_position,
@@ -227,6 +243,7 @@ func _do_melee(wid: String, data: Dictionary) -> void:
 		"range": data.get("range", Vector2(48, 28)),
 		"knockback": 180.0,
 		"type": "melee",
+		"crit_from_behind": data.get("crit_from_behind", false),
 	}
 	attacked.emit(info)
 	EventBus.hitstop_requested.emit(HITSTOP)

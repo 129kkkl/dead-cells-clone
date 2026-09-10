@@ -45,6 +45,13 @@ func _physics_process(delta: float) -> void:
 	hurt_timer = maxf(hurt_timer - delta, 0.0)
 	velocity.y += 1200.0 * delta
 
+	if state == State.HURT:
+		velocity.x = move_toward(velocity.x, 0.0, 800 * delta)
+		if hurt_timer <= 0.0:
+			state = State.CHASE
+		move_and_slide()
+		return
+
 	if player == null or not is_instance_valid(player) or player.dead:
 		_patrol(delta)
 		move_and_slide()

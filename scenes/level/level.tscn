@@ -150,7 +150,7 @@ offset_left = 1500.0
 offset_top = 1020.0
 offset_right = 1880.0
 offset_bottom = 1070.0
-text = "Tab地图 Esc暂停 E交互 Q换副武"
+text = "Tab地图 Esc暂停 E交互 Q换副武 R换主武"
 
 [node name="Map" type="Control" parent="HUD/Root"]
 visible = false

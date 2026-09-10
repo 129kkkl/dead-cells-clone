@@ -22,16 +22,23 @@ const ENEMY_SCRIPTS := {
 @onready var death_ui: CanvasLayer = $DeathUI
 @onready var collector_ui: CanvasLayer = $CollectorUI
 
+const DOOR_W := 100.0
+const DOOR_H := 90.0
+
 var level_data: Dictionary
 var player: CharacterBody2D
 var trauma := 0.0
 var hitstop := 0.0
+var hitstop_left := 0.0
 var exit_door: Area2D
 
 func _ready() -> void:
 	EventBus.camera_trauma.connect(func(a: float): trauma = minf(trauma + a, 1.0))
-	EventBus.hitstop_requested.connect(func(d: float): hitstop = maxf(hitstop, d))
+	EventBus.hitstop_requested.connect(func(d: float): hitstop_left = maxf(hitstop_left, d))
+	# ysort on
+	ysort.y_sort_enabled = true
 	EventBus.player_died.connect(_on_player_died)
+	EventBus.enemy_killed.connect(_on_enemy_killed)
 
 	if not GameState.in_run:
 		GameState.start_new_run(GameState.settings.get("seed", 0))
@@ -46,28 +53,59 @@ func _ready() -> void:
 	EventBus.biome_title.emit("被囚者牢房")
 	SaveManager.save_game()
 
+func _room_active(room: Dictionary) -> bool:
+	return room.get("on_path", false) or room.get("type", 0) != 0
+
 func _build_geometry() -> void:
 	var gw: int = level_data["grid"]
 	var rw: int = level_data["room_w"]
 	var rh: int = level_data["room_h"]
-	# outer boundary + simple floors/platforms per room
+	var doors_map := {}
 	for room in level_data["rooms"]:
-		if room["type"] == 0 and not room["on_path"]:
-			# empty filler — still solid walls so you don't fall into void if you wander
+		doors_map[room["coord"]] = room.get("doors", {"left": false, "right": false, "up": false, "down": false})
+
+	for room in level_data["rooms"]:
+		if not _room_active(room):
 			continue
 		var origin: Vector2 = room["origin"]
-		_floor_block(origin + Vector2(0, rh - 24), Vector2(rw, 24))
-		_wall_block(origin + Vector2(-16, 0), Vector2(16, rh))
-		_wall_block(origin + Vector2(rw, 0), Vector2(16, rh))
+		var d: Dictionary = doors_map[room["coord"]]
+
+		# floor with optional down shaft
+		if d.get("down", false):
+			var side := (rw - DOOR_W) * 0.5
+			_floor_block(origin + Vector2(0, rh - 24), Vector2(side, 24))
+			_floor_block(origin + Vector2(side + DOOR_W, rh - 24), Vector2(side, 24))
+			# climb ledges near the shaft
+			_floor_block(origin + Vector2(side - 40, rh - 120), Vector2(70, 14))
+			_floor_block(origin + Vector2(side + DOOR_W - 30, rh - 180), Vector2(70, 14))
+		else:
+			_floor_block(origin + Vector2(0, rh - 24), Vector2(rw, 24))
+
+		# left / right walls with optional door gap
+		if d.get("left", false):
+			_wall_block(origin + Vector2(-16, 0), Vector2(16, rh - DOOR_H))
+		else:
+			_wall_block(origin + Vector2(-16, 0), Vector2(16, rh))
+		if d.get("right", false):
+			_wall_block(origin + Vector2(rw, 0), Vector2(16, rh - DOOR_H))
+		else:
+			_wall_block(origin + Vector2(rw, 0), Vector2(16, rh))
+
+		# ceiling with optional up shaft
+		if d.get("up", false):
+			var side := (rw - DOOR_W) * 0.5
+			_wall_block(origin + Vector2(0, -16), Vector2(side, 16))
+			_wall_block(origin + Vector2(side + DOOR_W, -16), Vector2(side, 16))
+		else:
+			_wall_block(origin + Vector2(0, -16), Vector2(rw, 16))
+
 		# interior platforms
 		var rng := RandomNumberGenerator.new()
-		rng.seed = GameState.run_seed + origin.x * 31 + origin.y * 17
+		rng.seed = GameState.run_seed + int(origin.x) * 31 + int(origin.y) * 17
 		for i in rng.randi_range(1, 3):
 			var px := origin.x + rng.randf_range(60, rw - 140)
 			var py := origin.y + rng.randf_range(rh * 0.35, rh * 0.7)
 			_floor_block(Vector2(px, py), Vector2(rng.randf_range(70, 120), 16))
-		# ceiling
-		_wall_block(origin + Vector2(0, -16), Vector2(rw, 16))
 
 	# full outer boundary of the map
 	var total_w := gw * rw
@@ -77,20 +115,33 @@ func _build_geometry() -> void:
 	_wall_block(Vector2(-40, 0), Vector2(40, total_h))
 	_wall_block(Vector2(total_w, 0), Vector2(40, total_h))
 
-	# decorative stone tiles
+	# decorative stone tiles (seeded)
 	for room in level_data["rooms"]:
-		if room["type"] == 0 and not room["on_path"]:
+		if not _room_active(room):
 			continue
 		var origin: Vector2 = room["origin"]
+		var rng2 := RandomNumberGenerator.new()
+		rng2.seed = GameState.run_seed + int(origin.x) * 13 + int(origin.y) * 7 + 99
 		for tx in range(12):
 			for ty in range(6):
-				if randf() < 0.35:
+				if rng2.randf() < 0.3:
 					var brick := ColorRect.new()
 					brick.size = Vector2(40, 18)
 					brick.position = origin + Vector2(tx * 40, ty * 28 + 8)
-					brick.color = Color(0.22, 0.18, 0.24).lerp(Color(0.3, 0.25, 0.32), randf())
+					brick.color = Color(0.22, 0.18, 0.24).lerp(Color(0.3, 0.25, 0.32), rng2.randf())
 					brick.z_index = -5
 					world.add_child(brick)
+
+func _on_enemy_killed(_id: String, pos: Vector2) -> void:
+	var p = PickupScript.new()
+	p.setup("cell", 1)
+	p.position = pos + Vector2(randf_range(-8, 8), -10)
+	ysort.add_child(p)
+	if randf() < 0.55:
+		var g = PickupScript.new()
+		g.setup("gold", randi_range(3, 12))
+		g.position = pos + Vector2(randf_range(-12, 12), -16)
+		ysort.add_child(g)
 
 func _floor_block(pos: Vector2, size: Vector2) -> void:
 	var body := StaticBody2D.new()
@@ -241,7 +292,11 @@ func _melee_hit(info: Dictionary) -> void:
 	for e in ysort.get_children():
 		if e.is_in_group("enemies") and e.has_method("take_hit"):
 			if box.has_point(e.global_position + Vector2(0, -12)) or box.grow(10).has_point(e.global_position):
-				e.take_hit(info["damage"], facing, info.get("knockback", 160.0), false)
+				var dmg: int = info["damage"]
+				if info.get("crit_from_behind", false) and e.get("face") == facing:
+					dmg = int(dmg * 1.5)
+					EventBus.toast.emit("背刺暴击！")
+				e.take_hit(dmg, facing, info.get("knockback", 160.0), false)
 				_blood(e.global_position)
 				break
 
@@ -278,12 +333,14 @@ func _blood(pos: Vector2) -> void:
 		tw.tween_callback(p.queue_free)
 
 func _process(delta: float) -> void:
-	# hitstop
-	if hitstop > 0.0:
-		hitstop -= delta
+	# hitstop uses unscaled seconds
+	var unscaled := delta / maxf(Engine.time_scale, 0.0001)
+	if hitstop_left > 0.0:
+		hitstop_left -= unscaled
 		Engine.time_scale = 0.05
 	else:
-		Engine.time_scale = move_toward(Engine.time_scale, 1.0, 0.2)
+		hitstop_left = 0.0
+		Engine.time_scale = move_toward(Engine.time_scale, 1.0, 0.3)
 
 	trauma = maxf(trauma - delta * 1.8, 0.0)
 	if player and is_instance_valid(player):
@@ -293,13 +350,17 @@ func _process(delta: float) -> void:
 		player.process_skill_cooldowns(delta)
 
 func _on_player_died() -> void:
-	Engine.time_scale = 1.0
+	if Engine.time_scale < 1.0:
+		Engine.time_scale = 1.0
+	hitstop_left = 0.0
 	death_ui.visible = true
 	get_tree().paused = false
 	if death_ui.has_method("show_death"):
 		death_ui.show_death()
 
 func _on_exit_used() -> void:
+	if player and is_instance_valid(player) and player.dead:
+		return
 	EventBus.level_exited.emit()
 	Engine.time_scale = 1.0
 	collector_ui.visible = true
@@ -316,5 +377,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 		pause_ui.visible = not pause_ui.visible
 		get_tree().paused = pause_ui.visible
+		if pause_ui.visible:
+			Engine.time_scale = 1.0
+			hitstop_left = 0.0
 	if event.is_action_pressed("open_map") and hud.has_method("toggle_map"):
 		hud.toggle_map(level_data)

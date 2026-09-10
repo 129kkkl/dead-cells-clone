@@ -92,11 +92,21 @@ func spend_cells(n: int) -> bool:
 	EventBus.cells_changed.emit(run_cells)
 	return true
 
+func spend_any_cells(n: int) -> bool:
+	## Prefer run cells, then bank.
+	if run_cells + bank_cells < n:
+		return false
+	var from_run := mini(run_cells, n)
+	run_cells -= from_run
+	var rest := n - from_run
+	bank_cells -= rest
+	EventBus.cells_changed.emit(run_cells)
+	return true
+
 func take_damage(amount: int) -> void:
 	hp = maxi(hp - amount, 0)
 	EventBus.player_health_changed.emit(hp, max_hp)
-	if hp <= 0:
-		EventBus.player_died.emit()
+	# death side-effect is owned by Player.die()
 
 func heal(amount: int) -> void:
 	hp = mini(hp + amount, max_hp)
@@ -115,6 +125,7 @@ func _setup_input_map() -> void:
 	_add_key_action("open_map", [KEY_TAB])
 	_add_key_action("pause", [KEY_ESCAPE])
 	_add_key_action("swap_weapon", [KEY_Q])
+	_add_key_action("swap_primary", [KEY_R])
 
 func _add_key_action(action: String, keys: Array) -> void:
 	if not InputMap.has_action(action):

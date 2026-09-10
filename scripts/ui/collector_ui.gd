@@ -56,25 +56,24 @@ func _refresh() -> void:
 	list.add_child(cap_row)
 
 func _unlock(id: String, cost: int, btn: Button) -> void:
-	if GameState.spend_cells(cost):
+	if GameState.spend_any_cells(cost):
 		GameState.unlocked_blueprints[id] = true
 		btn.text = "已解锁"
 		btn.disabled = true
-		cells_label.text = "本轮细胞：%d" % GameState.run_cells
+		_refresh()
 		EventBus.toast.emit("解锁 %s" % WeaponDB.WEAPONS[id]["name"])
 		SaveManager.save_game()
 	else:
-		EventBus.toast.emit("细胞不足")
+		EventBus.toast.emit("细胞不足（本轮+银行）")
 
 func _buy_cap(cost: int, btn: Button) -> void:
-	if GameState.spend_cells(cost):
+	if GameState.spend_any_cells(cost):
 		GameState.permanent_gold_cap_level += 1
 		btn.disabled = true
-		cells_label.text = "本轮细胞：%d" % GameState.run_cells
-		SaveManager.save_game()
 		_refresh()
+		SaveManager.save_game()
 	else:
-		EventBus.toast.emit("细胞不足")
+		EventBus.toast.emit("细胞不足（本轮+银行）")
 
 func _deposit() -> void:
 	SaveManager.deposit_run_cells_to_bank()

@@ -9,6 +9,7 @@ func _ready() -> void:
 		if GameState.baby_mode:
 			GameState.hp = GameState.max_hp
 			GameState.in_run = true
+			GameState.killed_this_level = 0
 			get_tree().reload_current_scene()
 		else:
 			GameState.reset_run_state_after_death()

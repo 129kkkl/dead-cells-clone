@@ -1,0 +1,436 @@
+[gd_scene load_steps=6 format=3 uid="uid://level_root"]
+
+[ext_resource type="Script" path="res://scripts/level/level.gd" id="1_level"]
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="2_hud"]
+[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="3_pause"]
+[ext_resource type="Script" path="res://scripts/ui/death_screen.gd" id="4_death"]
+[ext_resource type="Script" path="res://scripts/ui/collector_ui.gd" id="5_collector"]
+
+[node name="Level" type="Node2D"]
+script = ExtResource("1_level")
+
+[node name="World" type="Node2D" parent="."]
+
+[node name="YSort" type="Node2D" parent="World"]
+
+[node name="FX" type="Node2D" parent="World"]
+
+[node name="CanvasModulate" type="CanvasModulate" parent="."]
+color = Color(0.72, 0.7, 0.78, 1)
+
+[node name="Camera" type="Camera2D" parent="."]
+enabled = true
+zoom = Vector2(2.5, 2.5)
+position_smoothing_enabled = true
+position_smoothing_speed = 8.0
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("2_hud")
+
+[node name="Root" type="Control" parent="HUD"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="HPBar" type="ProgressBar" parent="HUD/Root"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 360.0
+offset_bottom = 48.0
+max_value = 100.0
+value = 100.0
+show_percentage = false
+
+[node name="HPFill" type="ColorRect" parent="HUD/Root"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 360.0
+offset_bottom = 48.0
+color = Color(0.75, 0.12, 0.16, 1)
+
+[node name="HPLabel" type="Label" parent="HUD/Root"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 52.0
+offset_right = 360.0
+offset_bottom = 76.0
+text = "HP 100/100"
+
+[node name="Gold" type="Label" parent="HUD/Root"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 900.0
+offset_right = 240.0
+offset_bottom = 930.0
+text = "金币 0"
+
+[node name="Cells" type="Label" parent="HUD/Root"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 940.0
+offset_right = 240.0
+offset_bottom = 970.0
+text = "细胞 0"
+
+[node name="Attrs" type="Label" parent="HUD/Root"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 76.0
+offset_right = 360.0
+offset_bottom = 100.0
+text = "残酷 1  战术 1  生存 1"
+
+[node name="Slots" type="HBoxContainer" parent="HUD/Root"]
+layout_mode = 0
+offset_left = 660.0
+offset_top = 1020.0
+offset_right = 1260.0
+offset_bottom = 1070.0
+alignment = 1
+
+[node name="W1" type="Label" parent="HUD/Root/Slots"]
+layout_mode = 2
+text = "[J] 生锈之剑"
+
+[node name="W2" type="Label" parent="HUD/Root/Slots"]
+layout_mode = 2
+text = "[K] 木盾"
+
+[node name="S1" type="Label" parent="HUD/Root/Slots"]
+layout_mode = 2
+text = "[U] 冰冻手雷"
+
+[node name="S2" type="Label" parent="HUD/Root/Slots"]
+layout_mode = 2
+text = "[I] 空"
+
+[node name="Biome" type="Label" parent="HUD/Root"]
+layout_mode = 0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 36.0
+offset_right = 200.0
+offset_bottom = 80.0
+grow_horizontal = 2
+horizontal_alignment = 1
+text = ""
+
+[node name="Toast" type="Label" parent="HUD/Root"]
+layout_mode = 0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 100.0
+offset_right = 200.0
+offset_bottom = 140.0
+grow_horizontal = 2
+horizontal_alignment = 1
+text = ""
+
+[node name="Seed" type="Label" parent="HUD/Root"]
+layout_mode = 0
+offset_left = 1600.0
+offset_top = 24.0
+offset_right = 1880.0
+offset_bottom = 48.0
+text = "种子 0"
+
+[node name="Help" type="Label" parent="HUD/Root"]
+layout_mode = 0
+offset_left = 1500.0
+offset_top = 1020.0
+offset_right = 1880.0
+offset_bottom = 1070.0
+text = "Tab地图 Esc暂停 E交互 Q换副武"
+
+[node name="Map" type="Control" parent="HUD/Root"]
+visible = false
+layout_mode = 0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BG" type="ColorRect" parent="HUD/Root/Map"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.05, 0.04, 0.08, 0.88)
+
+[node name="Draw" type="Control" parent="HUD/Root/Map"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PauseUI" type="CanvasLayer" parent="."]
+layer = 10
+script = ExtResource("3_pause")
+
+[node name="Root" type="Control" parent="PauseUI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BG" type="ColorRect" parent="PauseUI/Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.65)
+
+[node name="Title" type="Label" parent="PauseUI/Root"]
+layout_mode = 0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_top = 320.0
+offset_right = 100.0
+offset_bottom = 380.0
+grow_horizontal = 2
+horizontal_alignment = 1
+text = "暂停"
+
+[node name="Resume" type="Button" parent="PauseUI/Root"]
+layout_mode = 0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = -40.0
+offset_right = 120.0
+offset_bottom = 10.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "继续游戏"
+
+[node name="SaveQuit" type="Button" parent="PauseUI/Root"]
+layout_mode = 0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = 30.0
+offset_right = 120.0
+offset_bottom = 80.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "保存并回主菜单"
+
+[node name="QuitDesktop" type="Button" parent="PauseUI/Root"]
+layout_mode = 0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = 100.0
+offset_right = 120.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "保存并退出游戏"
+
+[node name="DeathUI" type="CanvasLayer" parent="."]
+layer = 11
+script = ExtResource("4_death")
+
+[node name="Root" type="Control" parent="DeathUI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BG" type="ColorRect" parent="DeathUI/Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.15, 0.02, 0.04, 0.82)
+
+[node name="Title" type="Label" parent="DeathUI/Root"]
+layout_mode = 0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 280.0
+offset_right = 200.0
+offset_bottom = 360.0
+grow_horizontal = 2
+horizontal_alignment = 1
+text = "你死了"
+
+[node name="Stats" type="Label" parent="DeathUI/Root"]
+layout_mode = 0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
+offset_top = 370.0
+offset_right = 300.0
+offset_bottom = 420.0
+grow_horizontal = 2
+horizontal_alignment = 1
+text = ""
+
+[node name="BabyToggle" type="CheckButton" parent="DeathUI/Root"]
+layout_mode = 0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -120.0
+offset_top = 430.0
+offset_right = 120.0
+offset_bottom = 470.0
+grow_horizontal = 2
+text = "宝宝模式（原地重试）"
+
+[node name="Retry" type="Button" parent="DeathUI/Root"]
+layout_mode = 0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = 20.0
+offset_right = 120.0
+offset_bottom = 70.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "重试"
+
+[node name="Menu" type="Button" parent="DeathUI/Root"]
+layout_mode = 0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = 90.0
+offset_right = 120.0
+offset_bottom = 140.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "回主菜单"
+
+[node name="CollectorUI" type="CanvasLayer" parent="."]
+layer = 12
+script = ExtResource("5_collector")
+
+[node name="Root" type="Control" parent="CollectorUI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BG" type="ColorRect" parent="CollectorUI/Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.06, 0.12, 0.94)
+
+[node name="Title" type="Label" parent="CollectorUI/Root"]
+layout_mode = 0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 60.0
+offset_right = 200.0
+offset_bottom = 120.0
+grow_horizontal = 2
+horizontal_alignment = 1
+text = "收藏家"
+
+[node name="Cells" type="Label" parent="CollectorUI/Root"]
+layout_mode = 0
+offset_left = 400.0
+offset_top = 130.0
+offset_right = 800.0
+offset_bottom = 170.0
+text = "本轮细胞：0"
+
+[node name="Bank" type="Label" parent="CollectorUI/Root"]
+layout_mode = 0
+offset_left = 900.0
+offset_top = 130.0
+offset_right = 1400.0
+offset_bottom = 170.0
+text = "收藏家银行：0"
+
+[node name="Scroll" type="ScrollContainer" parent="CollectorUI/Root"]
+layout_mode = 0
+offset_left = 400.0
+offset_top = 200.0
+offset_right = 1500.0
+offset_bottom = 820.0
+
+[node name="List" type="VBoxContainer" parent="CollectorUI/Root/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Deposit" type="Button" parent="CollectorUI/Root"]
+layout_mode = 0
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 400.0
+offset_top = -140.0
+offset_right = 700.0
+offset_bottom = -80.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "存入银行（全部细胞）"
+
+[node name="Continue" type="Button" parent="CollectorUI/Root"]
+layout_mode = 0
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 1200.0
+offset_top = -140.0
+offset_right = 1500.0
+offset_bottom = -80.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "继续深入"

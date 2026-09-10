@@ -1,0 +1,152 @@
+[gd_scene load_steps=2 format=3 uid="uid://main_menu"]
+
+[ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_menu"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_menu")
+
+[node name="BG" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.07, 0.05, 0.1, 1)
+
+[node name="Accent" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 1920.0
+offset_bottom = 8.0
+color = Color(0.75, 0.25, 0.18, 1)
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -400.0
+offset_top = 80.0
+offset_right = 400.0
+offset_bottom = 160.0
+grow_horizontal = 2
+horizontal_alignment = 1
+text = "CELLS OF RUIN / 残骸细胞"
+
+[node name="Subtitle" type="Label" parent="."]
+layout_mode = 0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -400.0
+offset_top = 160.0
+offset_right = 400.0
+offset_bottom = 200.0
+grow_horizontal = 2
+horizontal_alignment = 1
+text = "本地离线 · 像素动作 Rogue"
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MainPanel" type="VBoxContainer" parent="Center"]
+layout_mode = 2
+custom_minimum_size = Vector2(320, 0)
+
+[node name="StartBtn" type="Button" parent="Center/MainPanel"]
+layout_mode = 2
+text = "开始游戏"
+
+[node name="SettingsBtn" type="Button" parent="Center/MainPanel"]
+layout_mode = 2
+text = "设置"
+
+[node name="QuitBtn" type="Button" parent="Center/MainPanel"]
+layout_mode = 2
+text = "退出游戏"
+
+[node name="StartPanel" type="VBoxContainer" parent="Center"]
+visible = false
+layout_mode = 2
+custom_minimum_size = Vector2(360, 0)
+
+[node name="ContinueBtn" type="Button" parent="Center/StartPanel"]
+layout_mode = 2
+text = "继续游戏"
+
+[node name="RestartBtn" type="Button" parent="Center/StartPanel"]
+layout_mode = 2
+text = "重新开始"
+
+[node name="DailyBtn" type="Button" parent="Center/StartPanel"]
+layout_mode = 2
+text = "每日挑战"
+
+[node name="BackBtn1" type="Button" parent="Center/StartPanel"]
+layout_mode = 2
+text = "返回"
+
+[node name="SlotsPanel" type="VBoxContainer" parent="Center"]
+visible = false
+layout_mode = 2
+custom_minimum_size = Vector2(360, 0)
+
+[node name="Hint" type="Label" parent="Center/SlotsPanel"]
+layout_mode = 2
+text = "选择存档槽位"
+horizontal_alignment = 1
+
+[node name="Slot1" type="Button" parent="Center/SlotsPanel"]
+layout_mode = 2
+text = "存档 1（新游戏）"
+
+[node name="Slot2" type="Button" parent="Center/SlotsPanel"]
+layout_mode = 2
+text = "存档 2（新游戏）"
+
+[node name="Slot3" type="Button" parent="Center/SlotsPanel"]
+layout_mode = 2
+text = "存档 3（新游戏）"
+
+[node name="BackBtn2" type="Button" parent="Center/SlotsPanel"]
+layout_mode = 2
+text = "返回"
+
+[node name="SettingsPanel" type="VBoxContainer" parent="Center"]
+visible = false
+layout_mode = 2
+custom_minimum_size = Vector2(420, 0)
+
+[node name="Fullscreen" type="CheckButton" parent="Center/SettingsPanel"]
+layout_mode = 2
+text = "全屏"
+
+[node name="SeedLabel" type="Label" parent="Center/SettingsPanel"]
+layout_mode = 2
+text = "当前种子：0"
+
+[node name="SeedCopy" type="Button" parent="Center/SettingsPanel"]
+layout_mode = 2
+text = "复制种子"
+
+[node name="Keys" type="Label" parent="Center/SettingsPanel"]
+layout_mode = 2
+text = "键位：AD移动 空格跳 Shift翻滚 J主武 K副武 U/I技能 E交互 Tab地图 Esc暂停"
+autowrap_mode = 3
+
+[node name="BackBtn3" type="Button" parent="Center/SettingsPanel"]
+layout_mode = 2
+text = "返回"
